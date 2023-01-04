@@ -1,0 +1,70 @@
+[
+    {
+        "key": "ctrl+d",
+        "command": "jupyter.runcurrentcelladvance",
+        "when": "editorTextFocus && jupyter.hascodecells && !editorHasSelection && !notebookEditorFocused"
+    },
+    {
+        "key": "shift+enter",
+        "command": "-jupyter.runcurrentcelladvance",
+        "when": "editorTextFocus && jupyter.hascodecells && !editorHasSelection && !notebookEditorFocused"
+    },
+    {
+        "key": "ctrl+r",
+        //"command": "jupyter.execSelectionInteractive",
+        "command": "macros.jupyterExecSelectionAndCursorDown",
+        // "when": "editorTextFocus && editorLangId == 'python'"
+    },
+    {
+        "key": "ctrl+r",
+        "command": "jupyter.execSelectionInteractive",
+        "when": "editorTextFocus && isWorkspaceTrusted && jupyter.ownsSelection && !findInputFocussed && !notebookEditorFocused && !replaceInputFocussed && editorLangId == 'python'"
+    },
+    {
+        "key": "shift+enter",
+        "command": "-jupyter.execSelectionInteractive",
+        "when": "editorTextFocus && isWorkspaceTrusted && jupyter.ownsSelection && !findInputFocussed && !notebookEditorFocused && !replaceInputFocussed && editorLangId == 'python'"
+    },
+    {
+        "key": "ctrl+r",
+        "command": "language-julia.executeCodeBlockOrSelectionAndMove",
+        "when": "editorLangId == 'juliamarkdown' || editorTextFocus && editorLangId == 'julia' && activeEditor != 'workbench.editor.notebook'"
+    },
+    {
+        "key": "shift+enter",
+        "command": "-language-julia.executeCodeBlockOrSelectionAndMove",
+        "when": "editorLangId == 'juliamarkdown' || editorTextFocus && editorLangId == 'julia' && activeEditor != 'workbench.editor.notebook'"
+    },
+    {
+        "key": "ctrl+d",
+        "command": "language-julia.executeCellAndMove",
+        "when": "editorLangId == 'juliamarkdown' || editorTextFocus && editorLangId == 'julia' && activeEditor != 'workbench.editor.notebook'"
+    },
+    {
+        "key": "shift+alt+enter",
+        "command": "-language-julia.executeCellAndMove",
+        "when": "editorLangId == 'juliamarkdown' || editorTextFocus && editorLangId == 'julia' && activeEditor != 'workbench.editor.notebook'"
+    },
+    {
+        "key": "ctrl+u",
+        "command": "unicode-latex.insertMathSymbol"
+    },
+    {
+        "key": "ctrl+shift+c",
+        "command": "editor.action.commentLine",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+/",
+        "command": "-editor.action.commentLine",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+shift+j",
+        "command": "language-julia.restartREPL"
+    },
+    {
+        "key": "alt+j alt+r",
+        "command": "-language-julia.restartREPL"
+    }
+]

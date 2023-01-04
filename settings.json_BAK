@@ -1,0 +1,81 @@
+{
+    "workbench.editorAssociations": {
+        "*.ipynb": "jupyter-notebook"
+    },
+    "python.defaultInterpreterPath": "C:\\Users\\donbo\\anaconda3\\envs\\analysis\\python.exe",
+    "jupyter.interactiveWindowMode": "perFile",
+    "kite.showWelcomeNotificationOnStartup": false,
+    "python.pythonPath": "/home/donboyd/anaconda3/envs/analysis/bin/python",
+    "terminal.integrated.persistentSessionReviveProcess": "never",
+    "macros": {  // Note: this requires macros extension by publisher:"geddski"
+        "pythonExecSelectionAndCursorDown": [
+            "python.execSelectionInTerminal",
+            "cursorDown"
+        ],
+        "jupyterExecSelectionAndCursorDown": [
+            "jupyter.execSelectionInteractive",
+            "cursorDown"
+        ]
+    },
+    "workbench.colorCustomizations": {
+        "editor.selectionBackground": "#B1FF33",
+        "editor.selectionHighlightBackground": "#B1FF33"
+    },
+    "codemap.jl": "config:codemap.py",
+    "codemap.py": [
+        {
+            "pattern": "^# %%.*",
+            "icon": "level1"
+        },
+
+        {
+            "pattern": "^[ ]*(class ).*",
+            "icon": "class"
+        },
+
+        {
+            "pattern": "^[ ]*(def ).*$",
+            "icon": "function"
+        }
+    ],
+    "git.confirmSync": false,
+    "jupyter.askForKernelRestart": false,
+    "workbench.startupEditor": "newUntitledFile",
+    "terminal.integrated.tabs.enabled": true,
+    "files.trimTrailingWhitespace": true,
+    "terminal.integrated.commandsToSkipShell": [
+        "language-julia.interrupt"
+    ],
+    "julia.enableTelemetry": true,
+    "julia.execution.resultType": "both",
+    "editor.suggestSelection": "first",
+    "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+    "notebook.cellToolbarLocation": {
+        "default": "right",
+        "jupyter-notebook": "left"
+    },
+    "vs-kubernetes": {
+        "vscode-kubernetes.helm-path.linux": "/home/donboyd/.vs-kubernetes/tools/helm/linux-amd64/helm",
+        "vscode-kubernetes.minikube-path.linux": "/home/donboyd/.vs-kubernetes/tools/minikube/linux-amd64/minikube",
+        "vscode-kubernetes.kubectl-path.linux": "/home/donboyd/.vs-kubernetes/tools/kubectl/kubectl",
+        "vscode-kubernetes.helm-path.windows": "C:\\Users\\donbo\\.vs-kubernetes\\tools\\helm\\windows-amd64\\helm.exe",
+        "vscode-kubernetes.kubectl-path.windows": "C:\\Users\\donbo\\.vs-kubernetes\\tools\\kubectl\\kubectl.exe",
+        "vscode-kubernetes.minikube-path.windows": "C:\\Users\\donbo\\.vs-kubernetes\\tools\\minikube\\windows-amd64\\minikube.exe"
+    },
+    "redhat.telemetry.enabled": true,
+    "terminal.integrated.defaultProfile.windows": "PowerShell",
+    "terminal.integrated.inheritEnv": false,
+    "python.diagnostics.sourceMapsEnabled": true,
+    "notebook.output.textLineLimit": 1000,
+    "workbench.colorTheme": "Julia Light",
+    "julia.symbolCacheDownload": true,
+    "editor.minimap.scale": 2,
+    "tabnine.experimentalAutoImports": true,
+    "julia.enableCrashReporter": true,
+    "julia.execution.codeInREPL": true,
+    "files.autoSave": "afterDelay",
+    "window.zoomLevel": 1,
+    "terminal.integrated.scrollback": 10000,
+    "git.enableSmartCommit": true,
+    "githubPullRequests.createOnPublishBranch": "never"
+}
