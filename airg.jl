@@ -32,18 +32,21 @@
 ## loads 
 using Accessors
 using DataFrames
+using Distributions
 # using ExcelReaders
 using Missings
 using NamedArrays
 # using NamedTuples - not needed
 using Parameters  # allows key word arguments to struct, using @with_kw
 using Pkg
+using Random
 using Unicode
 using XLSX
 
 # packages to consider:
 #   AxisArrays
 #   ExcelReaders
+#   LabelledArrays
 
 # now my modules
 include("module_structures.jl")
@@ -51,7 +54,7 @@ using .structures
 # import .structures as st
 
 
-# Pkg.add("Accessors")
+# Pkg.add("LabelledArrays")
 # import Pkg; Pkg.precompile()
 
 ## techniques ----
@@ -74,7 +77,10 @@ ir_defaults = structures.set_ir_defaults()
 ir_defaults.maxr1
 ir_defaults
 
-ir_defaults = Nothing
+fieldnames(typeof(ir_defaults))
+dump(ir_defaults)
+
+# ir_defaults = Nothing
 
 
 
@@ -112,12 +118,49 @@ A = f(A)
 A
 
 
+struct MutableStruct
+    x::Float64
+    y::Float64
+end
+
+# Define the immutable struct
+struct ImmutableStruct
+    # The fields of the immutable struct do not need to match the fields of the mutable struct
+    z::Float64
+end
+
+# Create an instance of the mutable struct
+s = MutableStruct(1.0, 2.0)
+
+# Convert the mutable struct to an immutable struct
+t = convert(ImmutableStruct, s)
 
 
+# Now t is an immutable struct, and you can't change its fields
+# This will throw an error
+t.z = 3.0
 
 
+# 11 columns because it's got the bond returns in it
+cov_matrix = [
+	1.000	-0.249	0.318	-0.082	0.625	-0.169	0.309	-0.183	0.023	0.075	0.080;
+	-0.249	1.000	-0.046	0.630	-0.123	0.829	-0.136	0.665	-0.120	0.192	0.393;
+	0.318	-0.046	1.000	-0.157	0.259	-0.050	0.236	-0.074	-0.066	0.034	0.044;
+	-0.082	0.630	-0.157	1.000	-0.063	0.515	-0.098	0.558	-0.105	0.130	0.234;
+	0.625	-0.123	0.259	-0.063	1.000	-0.276	0.377	-0.180	0.034	0.028	0.054;
+	-0.169	0.829	-0.050	0.515	-0.276	1.000	-0.142	0.649	-0.106	0.067	0.267;
+	0.309	-0.136	0.236	-0.098	0.377	-0.142	1.000	-0.284	0.026	0.006	0.045;
+	-0.183	0.665	-0.074	0.558	-0.180	0.649	-0.284	1.000	0.034	-0.091	-0.002;
+	0.023	-0.120	-0.066	-0.105	0.034	-0.106	0.026	0.034	1.000	0.047	-0.028;
+	0.075	0.192	0.034	0.130	0.028	0.067	0.006	-0.091	0.047	1.000	0.697;
+	0.080	0.393	0.044	0.234	0.054	0.267	0.045	-0.002	-0.028	0.697	1.000;
+]
 
-
+Z = MvNormal(
+    zeros(11), #means for return and volatility
+    cov_matrix # covariance matrix
+    # full covariance matrix in AAA Excel workook on Parameters tab
+)
 
 
 
