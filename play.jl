@@ -40,9 +40,16 @@ collect(1:2:13)
 
 using ComponentArrays
 
-ax = Axis((a = 1, b = ViewAxis(2:7, PartitionedAxis(2, (a = 1, b = 2))), c = ViewAxis(8:10, (a = 1, b = 2:3))));
+ax = begin 
+    Axis(
+    (a = 1, 
+    b = ViewAxis(2:7, PartitionedAxis(2, (a = 1, b = 2))), 
+    c = ViewAxis(8:10, (a = 1, b = 2:3))
+    ))
+ end
+ax
 
-A = [100, 4, 1.3, 1, 1, 4.4, 0.4, 2, 1, 45];
+A = [100, 4, 1.3, 1, 1, 4.4, 0.4, 2, 1, 45]
 
 ca = ComponentArray(A, ax)
 # ComponentVector{Float64}(a = 100.0, b = [(a = 4.0, b = 1.3), (a = 1.0, b = 1.0), (a = 4.4, b = 0.4)], c = (a = 2.0, b = [1.0, 45.0]))

@@ -181,8 +181,8 @@ loop_scenarios = function(n, params)
 end
 
 
-@time stats = loop_scenarios(1000, params)
-@time stats = loop_scenarios(1000, params_LA)
+@time stats = loop_scenarios(10000, params)
+@time stats = loop_scenarios(10000, params_LA)
 
 # The summary statistics expected (per paper Table 8):
 # - `μ ≈ [0.0060, 0.0062, 0.0063, 0.0065]`

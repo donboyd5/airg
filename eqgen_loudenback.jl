@@ -291,3 +291,5 @@ end  # when n=10000 takes a bit over 30 seconds, scens takes all the time
 #  28.028296 seconds (264.43 M allocations: 17.999 GiB, 5.79% gc time)
 # (μ = [0.006088069038537702; 0.00621719999236229; 0.006320418952082233; 0.0064812334995546185;;], σ = [0.04357643164220039; 0.04915171978823114; 0.05902770226835611; 0.07236101059392772;;])
 
+# 10,000 100-year monthly scenarios takes about 20 minutes, including interest rates, and csv file writing, in Excel
+
