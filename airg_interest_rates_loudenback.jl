@@ -237,5 +237,6 @@ let
 
 scenarios[1]
 tmp = scenarios[2]
+size(scenarios)
 
-plot(sum(hcat([s[:,9] for s in scenarios]...),dims=2) ./ n_scenarios)
+plot(sum(hcat([s[:,10] for s in scenarios]...),dims=2) ./ n_scenarios)

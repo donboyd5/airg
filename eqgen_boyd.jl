@@ -1,4 +1,6 @@
 
+# https://www.matecdev.com/
+
 # this is based on code by Alec Loudenback, here: https://github.com/JuliaActuary/Learn/blob/master/AAA_Equity_Generator.jl
 
 using ComponentArrays
@@ -102,7 +104,8 @@ cov_matrix = [
 
 Z = MvNormal(
 	# define random numbers we will get
-	# we will need 11 sets of correlated random numbers, one per column of the covariance (correlation) matrix
+	# we will need 11 sets of correlated random numbers, one per column of the covariance (correlation) matrix, which includes not just correlations
+	# of returns, but also of volatilities
     zeros(11), # means for return and volatility
     cov_matrix # covariance matrix
     # full covariance matrix in AAA Excel workook on Parameters tab
@@ -112,6 +115,9 @@ Z = MvNormal(
 # Note that the `@.` and other broadcasting (`.` symbol) allows us to operate on multiple funds at once.
 
 function v(v_prior,params,Zₜ) 
+	# natural logarithm of annualized volatility in month t
+	# v(t) = Max{v-minus, Min(v*, v-tilde(t))} see Table 5 of the March 2005 documentation
+	# The Z[[1, 3, 5, 7]] are the random values for correlated log volatilities, for 4 asset classes
 	(;σ_v, σ_m,σ_p,σ⃰,ϕ,τ) = params
 	
 	v_m = log.(σ_m)
