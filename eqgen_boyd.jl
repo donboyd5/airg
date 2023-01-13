@@ -30,7 +30,7 @@ using RandomNumbers
 
 # md"## Model Parameters"
 # use a labelled array for easy reference of the parameters 
-# the 4 columns are equity parameters for the funds:
+# the 4 columns are equity parameters for the funds: (each column is a fund, each row a param)
 #   US Diversified, Int'l Diversified, Intermed Risk, Aggressive / Exotic
 params_LA = @LArray [
     0.12515 0.14506 0.16341 0.20201 # τ tau
@@ -187,7 +187,7 @@ loop_scenarios = function(n, params)
 end
 
 
-@time stats = loop_scenarios(10000, params)
+@time stats = loop_scenarios(1000, params)
 @time stats = loop_scenarios(10000, params_LA)
 
 # The summary statistics expected (per paper Table 8):
