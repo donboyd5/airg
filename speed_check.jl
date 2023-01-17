@@ -481,7 +481,7 @@ f_hd5(2)
 
 fid=h5open(test,"r")
 dset = fid["A/results"]
-dset[2000,1:14,1:10]
+dset[3,1:14,1:10]
 close(fid)
 
 

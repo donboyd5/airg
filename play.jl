@@ -68,3 +68,14 @@ ca.c
 
 ca.c.b
 
+
+using Pkg
+Pkg.update()
+Pkg.add("IJulia")
+Pkg.build("IJulia")
+using IJulia
+notebook()
+Pkg.add("Revise")
+
+using Conda
+Conda.add("jupyter-cache")

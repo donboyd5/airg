@@ -23,25 +23,146 @@ fall = hcat(f1, f2, f3, f4)
 
 adims = (a = (1,:), b = (2,:), c = (3,:)) # associate a row with each parameter
 
+funddims = (bonds=(:, 1), st1=(:, 2), st2=(:, 3), st3=(:, 4))
+bdims=merge(adims, funddims)
+
 # construct a labelled array for each fund
 lf1 = @LArray f1 adims
 lf2 = @LArray f2 adims
 lf3 = @LArray f3 adims
 lf4 = @LArray f4 adims
 
-lfall = @LArray (hcat(lf1, lf2, lf3, lf4)) adims
+lfall = @LArray (hcat(lf1, lf2, lf3, lf4)) bdims
 
 lfall.a
 lfall.b
 lfall.c
 
+lfall.bonds
+lfall.st3
+# lfall.a.bonds # can't do this
+lfall[:, 1]
+
+lfall[:, 1]
+lfall[1, :]
+lfall[:, 1].a
+
+
 ## now do it for component arrays ----
+# https://jonniedie.github.io/ComponentArrays.jl/stable/api/
+# ax = Axis((a = (1,:), b = (2,:), c = (3,:)))
+adims = (a = (1,:), b = (2,:), c = (3,:)) # associate a row with each parameter
+adims = (a = 1, b = 2, c = 3) #
+ax = Axis(adims)
+bdims = (bonds=(:, 1), st1=(:, 2), st2=(:, 3), st3=(:, 4))
+bx = Axis(bdims)
+
+cf1 = ComponentArray(f1, ax)
+cf2 = ComponentArray(f2, ax)
+cf3 = ComponentArray(f3, ax)
+cf4 = ComponentArray(f4, ax)
 
 
+cfall = ComponentArray(hcat(cf1, cf2, cf3, cf4), (ax, bx))
+cfall.a
+cfall[1]
+cfall[1,:]
+cfall[:]
+cfall[:,1]
+cfall[:,1].a
 
+cfall = ComponentArray(hcat(cf1, cf2, cf3, cf4), (ax, ax))
+cfall.a
+
+
+ComponentArrays.labels(fall)
+ComponentArrays.labels(cfall)
+
+
+cfall = ComponentArray(hcat(cf1, cf2, cf3, cf4), ax)
+cfall = ComponentMatrix(hcat(cf1, cf2, cf3, cf4), ax)
+
+cfall = ComponentArray(hcat(cf1, cf2, cf3, cf4), cx2)
+
+PartitionedAxis(2, (a = 1, b = 2))
+
+PartitionedAxis((a = 1, b = 2))
+
+cx2 = PartitionedAxis(1, (a = 1, b=2, c=3))
 
 
 ## old below here ----
+
+ax = Axis((a = 1, b = ViewAxis(2:7, PartitionedAxis(2, (a = 1, b = 2))), c = ViewAxis(8:10, (a = 1, b = 2:3))))
+
+A = [100, 4, 1.3, 1, 1, 4.4, 0.4, 2, 1, 45]
+
+ca = ComponentArray(A, ax)
+
+ca
+ca.a
+
+ca.b
+ca.b[3]
+ca.b.b
+ca.b.a
+
+ca.c
+ca.c.b
+
+ca
+collect(ca)
+
+a = [1, 2, 3, 4]
+b = [5, 10, 15, 20]
+ab = hcat(a, b)  # 4 x 2
+ab[:, 1]
+
+cab = ComponentArray(ab=ab)
+collect(cab)
+cab[:, 1]
+
+
+
+ax = Axis()
+cab = ComponentArray(ab=ab)
+
+
+
+lorenz_p = (σ=10.0, ρ=28.0, β=8/3)
+lorenz_ic = ComponentArray(x=0.0, y=0.0, z=0.0)
+
+lorenz_p.σ
+lorenz_p.σ = 12.0 # error
+
+lotka_p = (α=2/3, β=4/3, γ=1.0, δ=1.0)
+lotka_ic = ComponentArray(x=1.0, y=1.0)
+typeof(lotka_p)
+
+comp_p = (lorenz=lorenz_p, lotka=lotka_p, c=0.01)
+typeof(comp_p)
+size(comp_p)
+comp_p[1]
+comp_p.lorenz
+
+comp_ic = ComponentArray(lorenz=lorenz_ic, lotka=lotka_ic)
+comp_ic[4]
+
+t = (a = 1, b = 2.0, c = "3")
+t.a
+
+
+# bonds = (τ=, ϕ=, σ=)
+bonds = (τ=0.5, ϕ=1.3, σ=0.7)
+stocks = (τ=0.75, ϕ=1.7, σ=0.12)
+vcat(bonds, stocks)
+bs = (bonds=bonds, stocks=stocks)
+bs.bonds
+bs.bonds.τ
+bs.stocks.τ
+bs[1].τ
+bs[2].τ
+
 a = [1, 2, 3, 4]
 b = [5, 10, 15, 20]
 cat(a, b, dims =(2, 2))
