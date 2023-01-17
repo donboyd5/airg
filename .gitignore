@@ -3,6 +3,7 @@
 .vscode
 
 *.doc
+*.js*
 *.pdf
 *.xls*
 
