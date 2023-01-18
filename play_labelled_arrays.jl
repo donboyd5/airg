@@ -9,6 +9,93 @@ using LabelledArrays
 #   with the notation p.a
 # we want it easily generalizable so that we can add another fund by adding a column to the matrix
 
+
+## new attempt with component arrays ----
+p1 = ComponentArray(a=0.1, b=0.2, c=0.3, d=5.)
+p2 = ComponentArray(a=0.5, b=0.7, c=0.5, d=6.)
+p3 = ComponentArray(a=0.2, b=0.9, c=0.2, d=7.)
+
+a=nothing; b=nothing; c=nothing; d=nothing; e=nothing
+
+(d, e)=p1 # bad, surprising result
+d
+e
+
+(;d, e)=p1 # FAILS - using the semi-colon ensures that we can only unpack into properly named fields
+(; a, b)=p1 # works
+(; b, a)=p1 # works
+
+a
+b
+p1.a
+p1[2]
+
+(a, b) = p1
+a
+b
+c
+(; a, b) = p
+a
+
+p123 = hcat(p1, p2, p3)
+
+
+x = ComponentVector(a=1, b=2, c=3);
+x2 = x .* x'
+x2[1, :]
+x2[2, :]
+x2[3, :]
+
+x2[:, 1]
+
+y= ComponentVector(a=4, b=5, c=6)
+xy = x .* y'
+xy[1, :]
+xy[:, 1]
+xy[1, "a"]
+xy[1, :a]
+xy[:, :a]
+(; a, b, c) = xy[1, :]
+a, b, c
+
+
+p123 = ComponentArray(a=p1, b=p2, c=p3)
+# p123 = ComponentArray((a=p1, b=p2, c=p3)) # same thing - extra parentheses have no effect
+p123.a
+p123.b
+p123[1]
+p123[:a]
+p123[:1]
+p123[[1]]
+
+p123[KeepIndex(1)]
+p123[KeepIndex(1:4)]
+@view p123[KeepIndex(1:4)]
+
+(; a, b, c, d) = @view p123[KeepIndex(1:4)] # error
+(; a, b, c, d) = p123[KeepIndex(1:4)] # error
+
+## use axes djb this is it ----
+#  allows us to use an index to get a fund, and unpack its parameters
+a=nothing; b=nothing; c=nothing; d=nothing; e=nothing
+px = Axis((a=1:4, b=5:8, c=9:12))
+p123 = ComponentArray([p1, p2, p3], px)
+p123[1] # gives the vector
+p123[2]
+p123[1].a
+(; a, b, c) = p123[1]
+d
+a
+
+ax = Axis((a = 1, b = ViewAxis(2:7, PartitionedAxis(2, (a = 1, b = 2))), c = ViewAxis(8:10, (a = 1, b = 2:3))));
+A = [100, 4, 1.3, 1, 1, 4.4, 0.4, 2, 1, 45];
+ca = ComponentArray(A, ax)
+ca.a
+ca.b
+size(ca.b)
+ca.c
+ca.c.b
+
 # try to do this with both labelled arrays and component arrays
 
 ## data setup ----

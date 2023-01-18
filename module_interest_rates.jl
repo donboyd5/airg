@@ -1,6 +1,7 @@
 
 module rates
 
+using LabelledArrays
 using Parameters 
 
 mutable struct ir_params
@@ -106,6 +107,40 @@ full_params(τ₁=0.035,vol=0.11489) =
 	rate_floor = 0.0001, # absolute rate floor
 	maturities = [0.25,0.5,1,2,3,5,7,10,20,30],
 )
+
+## now use labelled array to define parameters ----
+ir_dims = (
+    τ₁ = (1,:),   # Long term rate (LTR) mean reversion; djb: soa now uses .0325
+    β₁ = (1,:), # Mean reversion strength for the log of the LTR
+    θ = (1,:),
+    
+    τ₂ = (1,:),    # Mean reversion point for the slope
+    β₂ = (1,:), # Mean reversion strength for the slope
+    σ₂ = (1,:), # Volatitlity of the slope
+
+    τ₃ = (1,:),  # mean reversion point for the vol of the log of LTR
+    β₃ = (1,:), # mean reversion strength for the log of the vol of the log of LTR
+    σ₃ = (1,:), # vol of the stochastic vol process
+
+ρ₁₂ = -0.19197, # correlation of shocks to LTR and slope (long - short)
+ρ₁₃ = 0.0,  # correlation of shocks to long rate and volatility
+ρ₂₃ = 0.0,  # correlation of shocks to slope and volatility
+
+ψ = 0.25164,
+ϕ = 0.0002,
+
+r₂_min = 0.01, # soft floor on the short rate
+r₂_max = 0.4, # unused - maximum short rate
+r₁_min = 0.015, # soft floor on long rate before random shock; djb soa uses .0115
+r₁_max = 0.18, # soft cap on long rate before random shock
+κ = 0.25, # unused - when the short rate would be less than r₂_min it was κ * long 
+γ = 0.0, # unused - don't change from zero
+σ_init = 0.0287,
+months = 12 * 30,  # djb - make number of years a parameter so that it can be matched with # of years for equities
+rate_floor = 0.0001, # absolute rate floor
+maturities = [0.25,0.5,1,2,3,5,7,10,20,30],) 
+lf1 = @LArray f1 adims
+
 
 
 end

@@ -45,7 +45,6 @@
 # σ⃰ = [0.7988, 0.4519, 0.9463, 1.1387] # σ⃰ sigma* Maximum volatility (annualized, after random component)
 
 
-
 ## imports ----
 using ComponentArrays
 
