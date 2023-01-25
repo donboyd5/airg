@@ -139,8 +139,8 @@ r₁_max = 0.18, # soft cap on long rate before random shock
 months = 12 * 30,  # djb - make number of years a parameter so that it can be matched with # of years for equities
 rate_floor = 0.0001, # absolute rate floor
 maturities = [0.25,0.5,1,2,3,5,7,10,20,30],) 
-lf1 = @LArray f1 adims
+# lf1 = @LArray f1 adims
 
 
 
-end
+end # module

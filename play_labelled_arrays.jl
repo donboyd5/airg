@@ -10,6 +10,126 @@ using LabelledArrays
 # we want it easily generalizable so that we can add another fund by adding a column to the matrix
 
 
+
+## djb explore more 2023-01-23 THIS WORKS ALTHOUGH IT IS NOT A MATRIX ----
+# https://jonniedie.github.io/ComponentArrays.jl/stable/examples/DiffEqFlux/ for nesting component arrays
+p1 = ComponentArray(a=0.1, b=0.2, c=0.3, d=5.)
+p2 = ComponentArray(a=0.5, b=0.7, c=0.5, d=6.)
+
+# layers = (L1=dense_layer(2, 50), L2=dense_layer(50, 2))
+# θ = ComponentArray(u=u0, p=layers)
+p1 = (a=0.1, b=0.2, c=0.3, d=5.)
+p2 = (a=0.5, b=0.7, c=0.5, d=6.)
+p12nt = (p1=p1, p2=p2)
+
+# p12nt = ([p1 p2])
+
+p12 = ComponentArray(p12nt)
+p12.p1
+p12.p2
+p12.p2.a
+p12[1]
+p12[8]
+p12[:,1]
+p12[1,:]
+p12[[1]]
+p12nt[1]
+p12[:p1]
+p12nt.p1
+p12nt.p2
+p12[(1,)]
+
+
+function f(var, ca)
+    (; a, b, c, d) = ca[var]
+    return c
+end
+
+f(:p1, p12)
+f(:p2, p12)
+
+vars = (:p1, :p2) 
+
+for var in vars
+   println(f(var, p12))
+end
+
+
+
+p12 = ComponentArray(p1=p1, p2=p2)
+p12.p1
+getaxes(p12)
+
+ViewAxis(1:4, Axis(a = 1, b = 2, c = 3, d = 4))
+ViewAxis([1  2  3 4], Axis(a = 1, b = 2, c = 3, d = 4))
+
+p12 = ComponentArray(p1, p2)
+p12[(:p1, )]
+
+ax = (Axis(p1 = ViewAxis(1:4, Axis(a = 1, b = 2, c = 3, d = 4)), p2 = ViewAxis(5:8, Axis(a = 1, b = 2, c = 3, d = 4))),)
+p12x = ComponentArray(p1=p1, p2=p2, ax)
+p12.p1
+p12[:1]
+
+
+
+p12x = ComponentArray(p12, Axis(a=1))
+p12x.p1
+
+
+
+# vcat
+p12v = ComponentArray(vcat(p1, p2), Axis(p1=1:4, p2=5:8))
+p12v = ComponentArray(vcat(p1, p2), (Axis(p1=1:4, p2=5:8), ViewAxis(1)))
+p12v = ComponentArray(vcat(p1, p2), Axis(p1=1:4, p2=5:8, a=(1,5)))
+p12v.p1
+p12v.p2
+p12v.a
+
+
+# hcat
+KeepIndex(p1)
+p12h = ComponentArray(hcat(p1, p2))
+
+p12
+p12[1,:] # a values (row row)
+p12[:a,:] # a values
+p12["a",:] # values
+p12[:,1] # p1 column
+p12[:,:p1] # error
+
+# vcat
+p12 = ComponentArray(hcat(p1, p2))
+
+
+# array notation
+p12a = ComponentArray([p1, p2])
+p12a = ComponentArray([p1, p2], Axis(p1=1, p2=2))
+p12a
+p12a.p1 # error
+p12a[1,:] # p1
+p12a[:,:a] # error
+p12a[:,1] # the whole thing
+
+# va = ViewAxis(parent_index, index_map)
+va = ViewAxis(2, p1=1, p2=2)
+p12a = ComponentArray(p12)
+p12
+
+ax=Axis(a=1, b=2, c=3, d=4)
+bx=Axis(p1=1, p2=2)
+
+ax=Axis(a=1, b=2, c=3, d=4)
+bx=Axis(p1=1, p2=2)
+
+p12b=ComponentArray(hcat(p1, p2), (ax, bx))
+p12b[1,:].p1
+p12b[2,:].p1
+p12b[1,:].p2
+p12b[:,1]
+p12b.a # error
+p12b.p1 # error
+
 ## new attempt with component arrays ----
 p1 = ComponentArray(a=0.1, b=0.2, c=0.3, d=5.)
 p2 = ComponentArray(a=0.5, b=0.7, c=0.5, d=6.)
@@ -29,6 +149,35 @@ a
 b
 p1.a
 p1[2]
+
+p23 = ComponentArray(p2=p2, p3=p3)
+p23.p2
+p23.p2.a
+
+p23.p3
+p23[1]
+p23[[1]]
+p23[1; :]
+p23[:; 1]
+
+
+p23a=ComponentArray((p2=p2, p3=p3))
+
+p23a = ComponentArray([p1, p2])
+p23a = ComponentArray(vcat(p1, p2))
+
+p23a = ComponentArray(hcat(p1, p2))
+p23a = ComponentArray(hcat(p1, p2), Axis(a = 1, b = 2, c = 3, d = 4), FlatAxis())
+p23a = ComponentArray(hcat(p1, p2), Axis(a = 1, b = 2, c = 3, d = 4), ViewAxis(p1=1, p2=2))
+
+
+
+
+p12[:,1]
+p12[:,1].b
+p23a[:,2].b
+
+
 
 (a, b) = p1
 a
@@ -50,6 +199,7 @@ x2[:, 1]
 
 y= ComponentVector(a=4, b=5, c=6)
 xy = x .* y'
+xy.a # error
 xy[1, :]
 xy[:, 1]
 xy[1, "a"]
@@ -307,5 +457,40 @@ la12.a
 
 lala12 = @LArray (hcat(la1, la2)) (a = (1,:), b = (2,:), c = (3,:))
 lala12.a
+
+
+cmat = ComponentMatrix([1 2 3; 4 5 6], Axis(a=1, b=2), Axis(x=1, y=2, z=3))
+cmat
+cmat.a
+
+cmat[:, KeepIndex(3)]
+
+cmat[:, KeepIndex(:y)]
+
+SWATI=ComponentArray(amt = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], conc = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10])
+GWAT =ComponentArray(amt = 1.0, conc = 3.0)
+u0 = ComponentArray(SWATI = SWATI, GWAT = GWAT)
+u0.SWATI
+u0.GWAT
+
+
+A = zeros(6,6);
+ax = Axis(a=1:3, b=(4:6, (a=1, b=2:3)))
+ax = Axis(a=1:3, b=(4:6, (a=1, b=2:3)))
+ca = ComponentArray(A, (ax, ax))
+
+A = [1 2 3; 4 5 6; 7 8 9; 10 11 12; 13 14 15; 16 17 18]
+a = [1 3 5 7 9 11]
+A = [a; a*2; a*3; a*4; a*5; a*6]
+ax = Axis(a=1:3, b=(4:6, (a=1, b=2:3)))
+ca = ComponentArray(A, (ax, ax))
+ca[1,:].a
+
+
+a = [1, 3, 5]
+A = [a a*2]
+ax = Axis(a=1:3)
+bx = Axis(a=1:3)
+ca = ComponentArray(A, (:,bx))
 
 

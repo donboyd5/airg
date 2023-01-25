@@ -50,8 +50,14 @@ using ComponentArrays
 
 
 # now my modules
+# note that using is more conservative than import -- import brings everything in,
+# using just brings names in -  you can't add methods to functions brought in by using
+
 include("module_interest_rates.jl")
 using .rates # when we update the file, we don't need to rerun the using line, just the include line
+
+include("module_fixed_income.jl")
+import .fixed_income as fi
 
 include("module_equities.jl")
 using .equities
@@ -67,6 +73,12 @@ dump(pal)
 
 pdjb.τ₁
 pal.τ₁
+
+fi.fixed
+fi.f(:intgov, fi.fixed)
+
+abspath(PROGRAM_FILE)
+@__FILE__
 
 # pdjb.τ₁ = .035
 
