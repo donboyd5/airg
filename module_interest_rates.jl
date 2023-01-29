@@ -58,7 +58,7 @@ function scenario(start_curve, params)
         ψ, ϕ, r₂_min, r₂_max, r₁_min, r₁_max,
         κ, γ, σ_init, months, rate_floor, maturities) = params
 
-    months = convert(Int64, months) # input to randn must be integer
+    months = convert(Int64, months) # months is used to size the rates array and so must be integer
 
     # Random.seed!(123)  # temporary, to control results
 

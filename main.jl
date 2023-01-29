@@ -1,8 +1,21 @@
+#=
+TODO:
+- finish fixed income data structures
+- start loop through everything
+- possibly pass months (integer) and randn array size months to each function
+- for randn, this lets us control character of random numbers from OUTSIDE the function
+    e.g., correlated or not
+
+=#
+
+
+
+
 #= Credits
 
 This Economic Scenario Generator (ESG) is largely based on the Academy Interest Rate
 Generator (AIRG) jointly developed by the American Academy of Actuaries and the 
-Society of Actuary. A spreadsheet version of the model, and some documentation,
+Society of Actuaries. A spreadsheet version of the model, and some documentation,
 can be found here:
     https://www.actuary.org/content/economic-scenario-generators
 
@@ -49,8 +62,8 @@ code by Alec Loudenback at:
 
 
 ## imports ----
-using ComponentArrays
-
+using BenchmarkTools
+# using ComponentArrays
 
 # now my modules
 # note that using is more conservative than import -- import brings everything in,
@@ -66,6 +79,7 @@ include("module_equities.jl")
 using .equities
 # import .structures as st
 
+## interest rates ----
 # get interest rate parameters as component vector for fast indexing by name (?)
 rates.default
 rates.default.τ₁
@@ -84,7 +98,26 @@ rparms.τ₁
 rates.scenario(stcurve, rates.default)
 rates.scenario(stcurve, rparms)
 
-# djb - next: in module_interest_rates, loop through months
+
+## fixed income ----
+## djb this next
+
+## equities ----
+equities.funds
+equities.funds.usstocks
+equities.funds.usstocks.τ
+equities.funds.aggr.τ
+
+equities.fundnames
+for fund in equities.fundnames
+    println(fund)
+    println(equities.funds[fund])
+    println(equities.funds[fund].ρ)
+end
+
+equities.cov_matrix
+
+
 
 
 ## test parameters ----
