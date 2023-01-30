@@ -59,7 +59,11 @@ code by Alec Loudenback at:
 
 =#
 
-
+#= 
+shift-alt-a toggles block comments (with pound equals equals pound)
+snv
+fs
+nrfg =#
 
 ## imports ----
 using BenchmarkTools
@@ -68,6 +72,14 @@ using BenchmarkTools
 # now my modules
 # note that using is more conservative than import -- import brings everything in,
 # using just brings names in -  you can't add methods to functions brought in by using
+# you can't use "using as" but you can use "import as"
+
+include("module_default_params.jl")
+import .default_parameters as dp
+
+dp.default_params("rates")
+
+default_parameters
 
 include("module_interest_rates.jl")
 using .rates # when we update the file, we don't need to rerun the using line, just the include line
