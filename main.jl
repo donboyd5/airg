@@ -78,6 +78,26 @@ include("module_default_params.jl")
 import .default_parameters as dp
 
 dp.default_params("rates")
+dp.default_params("equities")
+dp.default_params("fixed")
+dp.default_params("covmatrix")
+dp.default_params("all")
+dp.default_params()
+x = dp.default_params()
+x.rates
+x.rates.τ₁
+
+x = dp.default_params("equities")
+dump(x)
+x[1]
+x[2]
+x[2].usstocks
+x[2].intrisk
+
+fnames, farray = dp.default_params("equities")
+fnames
+farray
+farray[1]
 
 default_parameters
 
