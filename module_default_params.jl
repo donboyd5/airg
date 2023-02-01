@@ -27,7 +27,7 @@ function default_rates()
         κ=0.25, # unused - when the short rate would be less than r₂_min it was κ * long 
         γ=0.0, # unused - don't change from zero
         σ_init=0.0287,
-        months=12 * 30,  # djb - make number of years a parameter so that it can be matched with # of years for equities
+        # months=12 * 30,  # djb - make number of years a parameter so that it can be matched with # of years for equities
         rate_floor=0.0001, # absolute rate floor
         maturities=[0.25, 0.5, 1, 2, 3, 5, 7, 10, 20, 30],
     )
@@ -91,9 +91,9 @@ aggr=(
     σ⃰=1.1387)    
 
     equity_names = (:usstocks, :intlstocks, :intrisk, :aggr)    
-    equity_funds = (usstocks=usstocks, intlstocks=intlstocks, intrisk=intrisk, aggr=aggr)
+    equity_array = ComponentArray(usstocks=usstocks, intlstocks=intlstocks, intrisk=intrisk, aggr=aggr)
     
-    return equity_names, equity_funds
+    return ComponentArray(equity_names=equity_names, equity_array=equity_array)
 end
 
 
@@ -104,8 +104,8 @@ function default_fixed()
 
     # combine the above into a named tuple, and put it into a ComponentArray
     fixed_names = (:money, :intgov, :longcorp)
-    fixed_array = (money=money, intgov=intgov, longcorp=longcorp)
-    return fixed_names, fixed_array
+    fixed_array = ComponentArray(money=money, intgov=intgov, longcorp=longcorp)
+    return ComponentArray(fixed_names=fixed_names, fixed_array=fixed_array)
 end
 
 
@@ -145,7 +145,10 @@ function default_params(type="all")
     elseif type=="all"
         # TODO
         params = ComponentArray(            
-        (rates=default_rates())
+        (rates=default_rates(),
+        equities=default_equities(),
+        fixed=default_fixed(),
+        covmatrix=default_covmatrix())
         )
         return params
     end

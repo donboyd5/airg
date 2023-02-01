@@ -8,6 +8,11 @@ TODO:
 
 =#
 
+#=
+Component arrays
+# https://jonniedie.github.io/ComponentArrays.jl/stable/api/
+
+=#
 
 
 
@@ -77,22 +82,65 @@ using BenchmarkTools
 include("module_default_params.jl")
 import .default_parameters as dp
 
+
+
+
 dp.default_params("rates")
 dp.default_params("equities")
 dp.default_params("fixed")
 dp.default_params("covmatrix")
 dp.default_params("all")
 dp.default_params()
+
 x = dp.default_params()
+x = dp.default_params("all")
+dump(x)
+size(x)
 x.rates
 x.rates.τ₁
+x.equities
+x.equities.equity_names
+x.equities.equity_array
+x.equities[1]
+x.equities[2] # not what I expected -- this is just going through each element of equities
+x.equities[3] # not what I expected
+x.equities.equity_array
+x.equities.equity_array.usstocks
+x.equities.equity_array.usstocks.τ
+x.equities.equity_names[1]
 
-x = dp.default_params("equities")
-dump(x)
+# so to index through equity funds, we do:
+x.equities.equity_array[x.equities.equity_names[1]] # and 2 and so on
+fnames = x.equities.equity_names
+farray = x.equities.equity_array
+(; τ, ϕ) = farray[fnames[1]]
+τ
+ϕ
+
+x.fixed.fixed_names
 x[1]
 x[2]
-x[2].usstocks
-x[2].intrisk
+
+x.covmatrix
+
+
+xx = dp.default_params("equities")
+dump(xx)
+xx.equity_names
+xx.equity_array
+xx[1]
+xx[2]
+xx.equity_array.usstocks
+xx.equity_array.intrisk
+xx.equity_array[1] # not what I expected
+xx.equity_array[:usstocks]
+
+x=dp.default_params("equities")
+x.equity_names
+x.equity_funds
+x.equity_funds.usstocks
+x.equity_funds[:usstocks]
+x.equity_funds[1]
 
 fnames, farray = dp.default_params("equities")
 fnames
