@@ -1,5 +1,5 @@
 
-module rates
+module intrates
 
 #=
 Based heavily on Alec Loudenback's code
@@ -11,44 +11,9 @@ Based heavily on Alec Loudenback's code
 using ComponentArrays
 using Random
 
-# return rates.defaults as named tuple
-# I create a component array from a named tuple, so that I can access parameters by
-# name using . syntax (like a named tuple) and so that I can change parameter values.
-# However, using an array forces all values to Float64, including months, which is 
-# used to size certain arrays. This sizing requires integer values, not Float64, and so
-# after unpacking I convert months to integer.
-
-default_nt =
-    (
-        τ₁=0.0325,   # Long term rate (LTR) mean reversion; djb: soa now uses .0325
-        β₁=0.00509, # Mean reversion strength for the log of the LTR
-        θ=1, τ₂=0.01,    # Mean reversion point for the slope
-        β₂=0.02685, # Mean reversion strength for the slope
-        σ₂=0.04148, # Volatitlity of the slope
-        τ₃=0.0287,  # mean reversion point for the vol of the log of LTR
-        β₃=0.04001, # mean reversion strength for the log of the vol of the log of LTR
-        σ₃=0.11489, # vol of the stochastic vol process
-        ρ₁₂=-0.19197, # correlation of shocks to LTR and slope (long - short)
-        ρ₁₃=0.0,  # correlation of shocks to long rate and volatility
-        ρ₂₃=0.0,  # correlation of shocks to slope and volatility
-        ψ=0.25164,
-        ϕ=0.0002, r₂_min=0.01, # soft floor on the short rate
-        r₂_max=0.4, # unused - maximum short rate
-        r₁_min=0.015, # soft floor on long rate before random shock; djb soa uses .0115
-        r₁_max=0.18, # soft cap on long rate before random shock
-        κ=0.25, # unused - when the short rate would be less than r₂_min it was κ * long 
-        γ=0.0, # unused - don't change from zero
-        σ_init=0.0287,
-        months=12 * 30,  # djb - make number of years a parameter so that it can be matched with # of years for equities
-        rate_floor=0.0001, # absolute rate floor
-        maturities=[0.25, 0.5, 1, 2, 3, 5, 7, 10, 20, 30],
-    )
-
-default = ComponentArray(default_nt)
-
 
 # This replicates the American Academy of Actuaries' scenario generator v7.1.202005
-function scenario(start_curve, params)
+function scenario(start_curve, params; months=1200)
 
     # unpack the params into the named variables
     (; τ₁, β₁, θ,
@@ -56,7 +21,9 @@ function scenario(start_curve, params)
         τ₃, β₃, σ₃,
         ρ₁₂, ρ₁₃, ρ₂₃,
         ψ, ϕ, r₂_min, r₂_max, r₁_min, r₁_max,
-        κ, γ, σ_init, months, rate_floor, maturities) = params
+        κ, γ, σ_init, rate_floor, maturities) = params
+
+    #  τ₁,β₁,θ,τ₂,β₂,σ₂,τ₃,β₃,σ₃,ρ₁₂,ρ₁₃,ρ₂₃,ψ,ϕ,r₂_min,r₂_max,r₁_min,r₁_max,κ,γ,σ_init,months,rate_floor,maturities = params
 
     months = convert(Int64, months) # months is used to size the rates array and so must be integer
 

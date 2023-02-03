@@ -32,7 +32,7 @@ function default_rates()
         maturities=[0.25, 0.5, 1, 2, 3, 5, 7, 10, 20, 30],
     )
     # ComponentArray(default_nt)
-    return default_nt
+    return ComponentArray(default_nt) # default_nt
 end
 
 
@@ -90,10 +90,10 @@ aggr=(
     σ_p=0.55,
     σ⃰=1.1387)    
 
-    equity_names = (:usstocks, :intlstocks, :intrisk, :aggr)    
-    equity_array = ComponentArray(usstocks=usstocks, intlstocks=intlstocks, intrisk=intrisk, aggr=aggr)
+    names = (:usstocks, :intlstocks, :intrisk, :aggr)    
+    array = ComponentArray(usstocks=usstocks, intlstocks=intlstocks, intrisk=intrisk, aggr=aggr)
     
-    return ComponentArray(equity_names=equity_names, equity_array=equity_array)
+    return ComponentArray(names=names, array=array)
 end
 
 
@@ -103,9 +103,9 @@ function default_fixed()
     longcorp = (m=10, β₀=0.08333, κ=0.00704, β₁=5.81293, σ=0.08282) # long corporate bonds
 
     # combine the above into a named tuple, and put it into a ComponentArray
-    fixed_names = (:money, :intgov, :longcorp)
-    fixed_array = ComponentArray(money=money, intgov=intgov, longcorp=longcorp)
-    return ComponentArray(fixed_names=fixed_names, fixed_array=fixed_array)
+    names = (:money, :intgov, :longcorp)
+    array = ComponentArray(money=money, intgov=intgov, longcorp=longcorp)
+    return ComponentArray(names=names, array=array)
 end
 
 

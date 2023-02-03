@@ -65,14 +65,16 @@ code by Alec Loudenback at:
 =#
 
 #= 
-shift-alt-a toggles block comments (with pound equals equals pound)
+shift-alt-a toggles block comments (with symbols: pound equals at start, equals pound at end)
 snv
 fs
 nrfg =#
 
 ## imports ----
 using BenchmarkTools
-# using ComponentArrays
+using ComponentArrays
+using Printf
+using Random
 
 # now my modules
 # note that using is more conservative than import -- import brings everything in,
@@ -82,7 +84,59 @@ using BenchmarkTools
 include("module_default_params.jl")
 import .default_parameters as dp
 
+include("module_interest_rates.jl")
+import .intrates
 
+
+## get default params and use in loops ----
+#  
+x = dp.default_params()
+getaxes(x)
+
+x.rates
+x.rates.τ₁
+x.rates.rate_floor
+
+x.equities
+x.equities.names
+x.equities.array.usstocks
+x.equities.array[:intlstocks]
+# x.equities.array[1] # does not get the vector of assets
+
+(; τ₁, β₁, θ,
+        τ₂, β₂, σ₂,
+        τ₃, β₃, σ₃,
+        ρ₁₂, ρ₁₃, ρ₂₃,
+        ψ, ϕ, r₂_min, r₂_max, r₁_min, r₁_max,
+        κ, γ, σ_init, rate_floor, maturities) = x.rates
+ϕ
+maturities
+
+stcurve = [0.01, 0.02, 0.024, 0.03, 0.04, 0.05, 0.055, 0.06, 0.07, 0.08] 
+intrates.scenario(stcurve, x.rates)
+intrates.scenario(stcurve, x.rates, months=24)
+
+        vals = x.equities.array
+for fund in x.equities.names
+    println(fund)
+    println(vals[fund])
+    @printf "tau = %0.3f\n" vals[fund].τ
+    @printf "rho = %0.3f\n" vals[fund].ρ
+end
+
+
+vals = x.fixed.array
+for fund in x.fixed.names
+    println(fund)
+    println(vals[fund])
+    @printf "kappa = %0.4f\n" vals[fund].κ
+    # @printf "rho = %0.3f\n" vals[fund].ρ
+end
+
+
+
+xe = dp.default_equities()
+xe
 
 
 dp.default_params("rates")
