@@ -20,91 +20,88 @@ module equities
 # σ⃰    sigma* 	    Maximum volatility (annualized, after random component)
 
 using ComponentArrays
+using Distributions # for MvNormal
+using Random
 
 
-# build a named tuple for each fund type
+# Z = MvNormal(
+# 	# define random numbers we will get
+# 	# we will need 11 sets of correlated random numbers, one per column of the covariance (correlation) matrix, which includes not just correlations
+# 	# of returns, but also of volatilities
+#     zeros(11), # means for return and volatility
+#     cov_matrix # covariance matrix
+#     # full covariance matrix in AAA Excel workook on Parameters tab
+# )
 
-# equity classes
-usstocks=(
-    τ=0.12515,
-    ϕ=0.35229,
-    σ_v=0.32645,
-    ρ=-0.2488,
-    A=0.055,
-    B=0.56,
-    C=-0.9,
-    σ_0=0.1476,
-    σ_m=0.0305,
-    σ_p=0.3,
-    σ⃰=0.7988)
+# Stochastic Log Volatility Model
+# Note that the `@.` and other broadcasting (`.` symbol) allows us to operate on multiple funds at once.
 
-intlstocks=(
-    τ=0.14506,
-    ϕ=0.41676,
-    σ_v=0.32634,
-    ρ=-0.1572,
-    A=0.055,
-    B=0.466,
-    C=-0.9,
-    σ_0=0.1688,
-    σ_m=0.0354,
-    σ_p=0.3,
-    σ⃰=0.4519)
+function v(v_prior,params,Zₜ) 
+	# natural logarithm of annualized volatility in month t
+	# v(t) = Max{v-minus, Min(v*, v-tilde(t))} see Table 5 of the March 2005 documentation
+	# The Z[[1, 3, 5, 7]] are the random values for correlated log volatilities, for 4 asset classes
+	(;σ_v, σ_m,σ_p,σ⃰,ϕ,τ) = params
+	
+	v_m = log.(σ_m)
+	v_p = log.(σ_p)
+	v⃰ = log.(σ⃰)
 
-intrisk=(
-    τ=0.16341,
-    ϕ=0.3632,
-    σ_v=0.35789,
-    ρ=-0.2756,
-    A=0.055,
-    B=0.67,
-    C=-0.95,
-    σ_0=0.2049,
-    σ_m=0.0403,
-    σ_p=0.4,
-    σ⃰=0.9463)
+	# vol are the odd values in the random array
+	ṽ =  @. min(v_p, (1 - ϕ) * v_prior + ϕ * log(τ) ) + σ_v * Zₜ[[1,3,5,7]]
+	
+	v = @. max(v_m, min(v⃰,ṽ))
 
-aggr=(
-    τ=0.20201,
-    ϕ=0.35277,
-    σ_v=0.34302,
-    ρ=-0.2843,
-    A=0.055,
-    B=0.715,
-    C=-1,
-    σ_0=0.2496,
-    σ_m=0.0492,
-    σ_p=0.55,
-    σ⃰=1.1387)    
-
-funds = ComponentArray((usstocks=usstocks, intlstocks=intlstocks, intrisk=intrisk, aggr=aggr))
-fundnames = (:usstocks, :intlstocks, :intrisk, :aggr)
-
-# The Multivariate normal and covariance matrix
-# 11 columns because it's got the bond returns in it
-# the 11 elements of the matrix, in order, are
-# US LogVol, US LogRet, Int'l LogVol, Int'l LogRet, Small LogVol, Small LogRet, Aggr LogVol, Aggr LogRet, Money Ret, IT Govt Ret, LTCorp Ret
-# so logvols are in indexes 1, 3, 5, 7 -- US, Int'l, Small, Aggr
-# and log rets are in 2, 4, 6, 8, 9, 10, 11 -- US, Int'l, Small, Aggr, Money, IT Govt, LT Corp
-cov_matrix = [
-	1.000	-0.249	0.318	-0.082	0.625	-0.169	0.309	-0.183	0.023	0.075	0.080;
-	-0.249	1.000	-0.046	0.630	-0.123	0.829	-0.136	0.665	-0.120	0.192	0.393;
-	0.318	-0.046	1.000	-0.157	0.259	-0.050	0.236	-0.074	-0.066	0.034	0.044;
-	-0.082	0.630	-0.157	1.000	-0.063	0.515	-0.098	0.558	-0.105	0.130	0.234;
-	0.625	-0.123	0.259	-0.063	1.000	-0.276	0.377	-0.180	0.034	0.028	0.054;
-	-0.169	0.829	-0.050	0.515	-0.276	1.000	-0.142	0.649	-0.106	0.067	0.267;
-	0.309	-0.136	0.236	-0.098	0.377	-0.142	1.000	-0.284	0.026	0.006	0.045;
-	-0.183	0.665	-0.074	0.558	-0.180	0.649	-0.284	1.000	0.034	-0.091	-0.002;
-	0.023	-0.120	-0.066	-0.105	0.034	-0.106	0.026	0.034	1.000	0.047	-0.028;
-	0.075	0.192	0.034	0.130	0.028	0.067	0.006	-0.091	0.047	1.000	0.697;
-	0.080	0.393	0.044	0.234	0.054	0.267	0.045	-0.002	-0.028	0.697	1.000;
-]
-
-
+	return v
 end
 
 
-# equity parameters
+function scenario(params,covmatrix;months=1200)
+	
+	(;σ_v,σ_0, ρ,A,B,C) = params
+
+    Z = MvNormal(
+	# define random numbers we will get
+	# we will need 11 sets of correlated random numbers, one per column of the covariance (correlation) matrix, which includes not just correlations
+	# of returns, but also of volatilities
+    zeros(11), # means for return and volatility
+    covmatrix # covariance matrix
+    # full covariance matrix in AAA Excel workook on Parameters tab
+    )	
+
+	# n_funds = size(params,2)
+	n_funds = 1 # size(params.τ)[1]
+	
+	#initilize/pre-allocate
+	Zₜ = rand(Z) # an 11 element vector of random numbers, drawn to be correlated, reflecting 11 items in corr matrix
+	v_t = log.(σ_0) # 4 element vector based on parameters, one per fund
+	σ_t = zeros(n_funds) # 4 element vector, one per fund
+	μ_t = zeros(n_funds) # 4 element vector, one per fund
+	
+	# this mapping looks like the thing to speed up
+	log_returns = map(1:months) do t # why do we do this over 10 months??; nevermind - looks like it's over 1200 generally, 10 was a test
+		Zₜ = rand!(Z,Zₜ) # a replacement set of 11 random numbers 0.000012 
+		v_t .= v(v_t,params,Zₜ) # 4-element replacement vector 0.000018 seconds (9 allocations: 704 bytes)
+
+		σ_t .= exp.(v_t) # 4-element replacement vector 0.000014 seconds (2 allocations: 32 bytes)
+
+		@. μ_t =  A + B * σ_t + C * (σ_t)^2 # 4-element replacement vector 0.000029 seconds (10 allocations: 688 bytes)
+		# @time temp =  A + B .* σ_t + C .* (σ_t).^2 # maybe slightly slower
+
+		# equity returns are the even values in the random array -- a 4-element vector -- this is what takes the most time, BEFORE compilation
+		# @time log_return = @. μ_t / 12 + σ_t / sqrt(12) * Zₜ[[2,4,6,8]]  # 0.013997 seconds (17.36 k allocations: 1017.116 KiB, 99.72% compilation time)
+		log_return = μ_t / 12 + σ_t / sqrt(12) .* Zₜ[[2,4,6,8]]  # this is about 1/3 faster		
+		# @time tmp = μ_t / 12 + σ_t / sqrt(12) .* Zₜ[[2,4,6,8]]  # this is about 1/3 faster
+		# after compilation: 0.000034 seconds (11 allocations: 576 bytes)
+	end # do
+
+	# convert vector of vector to matrix
+	reduce(hcat,log_returns) # figure out what this is doing??		
+end # function
+
+end # module
+
+
+# default equity parameters
 # τ = [0.12515, 0.14506, 0.16341, 0.20201], # tau Long run target volatility
 # ϕ = [0.35229, 0.41676, 0.3632, 0.35277],  # ϕ phi Strength of mean reversion
 # σ_v = [0.32645, 0.32634, 0.35789, 0.34302], # σ_v Monthly std deviation of the log volatility process

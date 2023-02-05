@@ -8,14 +8,10 @@ TODO:
 
 =#
 
-#=
-Component arrays
-# https://jonniedie.github.io/ComponentArrays.jl/stable/api/
-
-=#
 
 
 
+## Credits ----
 #= Credits
 
 This Economic Scenario Generator (ESG) is largely based on the Academy Interest Rate
@@ -87,13 +83,47 @@ import .default_parameters as dp
 include("module_interest_rates.jl")
 import .intrates
 
+include("module_equities.jl")
+include("module_equities2.jl")
+import .equities
 
-## get default params and use in loops ----
-#  
+
+## get default parameters ----
+# CAUTION: use dot notation to change values, NOT indexing, which works on slices, not views, of the component array
+
 x = dp.default_params()
+# names(typeof(x))
+dump(x)
 getaxes(x)
-
 x.rates
+x.equities
+x.fixed
+x.covmatrix
+
+x.rates.τ₁
+x.rates.τ₁ = .5
+x.rates
+
+x.equities.names
+x.equities.names[1]
+x.equities.names[1] = :don # error
+x.equities.funds
+x.equities.funds[:usstocks]
+x.equities.funds[:usstocks].τ
+x.equities.funds[:usstocks].τ = 7 # does not change the value in x.equities.funds.usstocks because we had a slice not a view!
+x.equities.funds.usstocks.τ=7  # dot notation DOES change the value
+x.equities.funds[:usstocks]
+x.equities.funds
+
+x.fixed.names
+x.fixed.names[1]
+x.fixed.funds
+x.fixed.funds[:money]
+x.fixed.funds[:money].m
+x.fixed.funds[:money].m=7  # does NOT change the value
+x.fixed.funds.money.m=7  # DOES change the value
+x.fixed.funds.money
+
 x.rates.τ₁
 x.rates.rate_floor
 
@@ -102,6 +132,10 @@ x.equities.names
 x.equities.array.usstocks
 x.equities.array[:intlstocks]
 # x.equities.array[1] # does not get the vector of assets
+
+x.covmatrix # gets a view
+x.covmatrix[1,1] = 6
+x.covmatrix
 
 (; τ₁, β₁, θ,
         τ₂, β₂, σ₂,
@@ -112,11 +146,54 @@ x.equities.array[:intlstocks]
 ϕ
 maturities
 
-stcurve = [0.01, 0.02, 0.024, 0.03, 0.04, 0.05, 0.055, 0.06, 0.07, 0.08] 
+
+## get yield curves ----
+stcurve = [0.01, 0.02, 0.024, 0.03, 0.04, 0.05, 0.055, 0.06, 0.07, 0.08] # starting yield curve
 intrates.scenario(stcurve, x.rates)
 intrates.scenario(stcurve, x.rates, months=24)
 
-        vals = x.equities.array
+
+## equoties ----
+# scenario(params,covmatrix;months=1200)
+# (;σ_v,σ_0, ρ,A,B,C) = params
+equities.scenario(x.params.equities.array.usstocks, x.covmatrix)
+
+equities.loop(x)
+
+
+using Distributions
+covmatrix=x.covmatrix
+convert(covmatrix, Float64)
+
+dp.default_covmatrix()
+
+covmatrix = [
+	1.000	-0.249	0.318	-0.082	0.625	-0.169	0.309	-0.183	0.023	0.075	0.080;
+	-0.249	1.000	-0.046	0.630	-0.123	0.829	-0.136	0.665	-0.120	0.192	0.393;
+	0.318	-0.046	1.000	-0.157	0.259	-0.050	0.236	-0.074	-0.066	0.034	0.044;
+	-0.082	0.630	-0.157	1.000	-0.063	0.515	-0.098	0.558	-0.105	0.130	0.234;
+	0.625	-0.123	0.259	-0.063	1.000	-0.276	0.377	-0.180	0.034	0.028	0.054;
+	-0.169	0.829	-0.050	0.515	-0.276	1.000	-0.142	0.649	-0.106	0.067	0.267;
+	0.309	-0.136	0.236	-0.098	0.377	-0.142	1.000	-0.284	0.026	0.006	0.045;
+	-0.183	0.665	-0.074	0.558	-0.180	0.649	-0.284	1.000	0.034	-0.091	-0.002;
+	0.023	-0.120	-0.066	-0.105	0.034	-0.106	0.026	0.034	1.000	0.047	-0.028;
+	0.075	0.192	0.034	0.130	0.028	0.067	0.006	-0.091	0.047	1.000	0.697;
+	0.080	0.393	0.044	0.234	0.054	0.267	0.045	-0.002	-0.028	0.697	1.000;
+]
+
+Z = MvNormal(
+	# define random numbers we will get
+	# we will need 11 sets of correlated random numbers, one per column of the covariance (correlation) matrix, which includes not just correlations
+	# of returns, but also of volatilities
+    zeros(11), # means for return and volatility
+    covmatrix # covariance matrix
+    # full covariance matrix in AAA Excel workook on Parameters tab
+    )	
+
+
+## OLD BELOW HERE ----
+
+vals = x.equities.array
 for fund in x.equities.names
     println(fund)
     println(vals[fund])
@@ -236,7 +313,7 @@ rates.scenario(stcurve, rparms)
 ## fixed income ----
 ## djb this next
 
-## equities ----
+## equities OLD ----
 equities.funds
 equities.funds.usstocks
 equities.funds.usstocks.τ
@@ -332,3 +409,44 @@ a = ComponentArray(f=(1.0, 3))
 # σ_m = [0.0305, 0.0354, 0.0403, 0.0492], # σ_m sigma minus Minimum volatility (annualized)
 # σ_p = [0.3, 0.3, 0.4, 0.55], # σ_p sigma+ Maximum volatility (annualized, before random component)
 # σ⃰ = [0.7988, 0.4519, 0.9463, 1.1387] # σ⃰ sigma* Maximum volatility (annualized, after random component)
+
+
+## selected julia notes ----
+
+# using UpdateJulia
+# update_julia()
+
+# https://quant.stackexchange.com/questions/1260/r-code-for-ornstein-uhlenbeck-process
+# Take a look at the sde package; specifically the dcOU and dsOU functions. You may also find some examples 
+# on the R-SIG-Finance mailing list, which would be in the results of a search on www.rseek.org
+
+# to get a greek letter type \ then a short name, such as \pi then select from list or hit enter etc.
+
+# https://www.julia-vscode.org/docs/stable/userguide/runningcode/
+# code cells start with ## 
+# Execute Code Cell in REPL: Alt+Enter
+
+## setting up an environment
+# https://pkgdocs.julialang.org/v1/environments/
+# https://jkrumbiegel.com/pages/2022-08-26-pkg-introduction/
+# https://www.julia-vscode.org/docs/stable/userguide/env/
+# get into pkg from the julia repl ]
+# activate .
+# st   # gives status
+# st -m # status of manifest
+# add DataFrames
+# st
+#  # repeat
+
+## miscellaneous commands and notes
+# cls in terminal to clear its console
+# ctrl-l or clear in julia repl to clear its console
+
+#### links for component arrays and for other help ----
+#=
+Component arrays
+# https://jonniedie.github.io/ComponentArrays.jl/stable/api/
+
+=#
+
+

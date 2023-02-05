@@ -103,8 +103,6 @@ function scenario(start_curve, params; months=1200)
     return rates
 end
 
-
-
 end # module
 
 

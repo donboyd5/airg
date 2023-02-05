@@ -20,7 +20,8 @@ function default_rates()
         ρ₁₃=0.0,  # correlation of shocks to long rate and volatility
         ρ₂₃=0.0,  # correlation of shocks to slope and volatility
         ψ=0.25164,
-        ϕ=0.0002, r₂_min=0.01, # soft floor on the short rate
+        ϕ=0.0002, 
+        r₂_min=0.01, # soft floor on the short rate
         r₂_max=0.4, # unused - maximum short rate
         r₁_min=0.015, # soft floor on long rate before random shock; djb soa uses .0115
         r₁_max=0.18, # soft cap on long rate before random shock
@@ -32,6 +33,7 @@ function default_rates()
         maturities=[0.25, 0.5, 1, 2, 3, 5, 7, 10, 20, 30],
     )
     # ComponentArray(default_nt)
+    # return a component view so that we can change vlaues
     return ComponentArray(default_nt) # default_nt
 end
 
@@ -91,9 +93,10 @@ aggr=(
     σ⃰=1.1387)    
 
     names = (:usstocks, :intlstocks, :intrisk, :aggr)    
-    array = ComponentArray(usstocks=usstocks, intlstocks=intlstocks, intrisk=intrisk, aggr=aggr)
+    # make the funds a ComponentArray so that we can change their values - can't if they're a named tuple
+    funds = ComponentArray(usstocks=usstocks, intlstocks=intlstocks, intrisk=intrisk, aggr=aggr)
     
-    return ComponentArray(names=names, array=array)
+    return (names=names, funds=funds) # fine to just return a named tuple, we can still change the funds ComponentArray
 end
 
 
@@ -104,8 +107,9 @@ function default_fixed()
 
     # combine the above into a named tuple, and put it into a ComponentArray
     names = (:money, :intgov, :longcorp)
-    array = ComponentArray(money=money, intgov=intgov, longcorp=longcorp)
-    return ComponentArray(names=names, array=array)
+    # make the funds a ComponentArray so that we can change their values - can't if they're a named tuple
+    funds = ComponentArray(money=money, intgov=intgov, longcorp=longcorp)
+    return (names=names, funds=funds)
 end
 
 
@@ -143,15 +147,11 @@ function default_params(type="all")
     elseif type=="covmatrix"
         return default_covmatrix()
     elseif type=="all"
-        # TODO
-        params = ComponentArray(            
-        (rates=default_rates(),
-        equities=default_equities(),
-        fixed=default_fixed(),
-        covmatrix=default_covmatrix())
-        )
-        return params
-    end
-end
+        return (rates=default_rates(), equities=default_equities(), fixed=default_fixed(), covmatrix=default_covmatrix())
+    end # elseif
+end # function
+
+# default_params()
+# default_params("rates")
 
 end # end module
