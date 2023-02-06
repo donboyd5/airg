@@ -153,13 +153,23 @@ intrates.scenario(stcurve, x.rates)
 intrates.scenario(stcurve, x.rates, months=24)
 
 
-## equoties ----
+## equities ----
 # scenario(params,covmatrix;months=1200)
 # (;σ_v,σ_0, ρ,A,B,C) = params
-equities.scenario(x.params.equities.array.usstocks, x.covmatrix)
+equities.scenario(x.equities, x.covmatrix)
 
-equities.loop(x)
+@btime equities.loop(x.equities) # r6.401 ms (522 allocations: 30.12 KiB) 1.520 ms (86 allocations: 2.88 KiB) 787.700 μs (69 allocations: 2.20 KiB)
+@btime equities.loop2(x.equities) # 6.385 ms (518 allocations: 31.44 KiB)  1.492 ms (82 allocations: 2.44 KiB)800.100 μs (65 allocations: 1.77 KiB)
 
+equities.loop(x.equities)
+
+# 812.900 μs (124 allocations: 3.05 KiB) no preallocation
+# 811.800 μs (142 allocations: 3.47 KiB) prealloc
+# 7.300 μs (70 allocations: 1.70 KiB)
+
+
+#  895.000 ms (48000070 allocations: 732.42 MiB)
+# 861.622 ms (48000070 allocations: 732.42 MiB)
 
 using Distributions
 covmatrix=x.covmatrix
@@ -365,6 +375,24 @@ pdjb.τ₁
 pal.τ₁
 
 a = ComponentArray(f=(1.0, 3))
+
+Z = MvNormal(
+	# define random numbers we will get
+	# we will need 11 sets of correlated random numbers, one per column of the covariance (correlation) matrix, which includes not just correlations
+	# of returns, but also of volatilities
+    zeros(11), # means for return and volatility
+    x.covmatrix # covariance matrix
+    # full covariance matrix in AAA Excel workook on Parameters tab
+)
+
+rand(Z) 
+rand(Z, 5)
+
+djb = rand(Z, 10000)
+
+djb[:, [1, 3]]
+
+
 
 # greek letters -- tab completion (or carriage return)
 # type \tau and then TAB (the tab key) for τ
