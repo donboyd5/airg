@@ -90,7 +90,6 @@ import .equities
 
 ## get default parameters ----
 # CAUTION: use dot notation to change values, NOT indexing, which works on slices, not views, of the component array
-
 x = dp.default_params()
 # names(typeof(x))
 dump(x)
@@ -99,6 +98,7 @@ x.rates
 x.equities
 x.fixed
 x.covmatrix
+x.covmat_axis
 
 x.rates.τ₁
 x.rates.τ₁ = .5
@@ -154,6 +154,19 @@ intrates.scenario(stcurve, x.rates, months=24)
 
 
 ## equities ----
+x.covmatrix
+equities.loop2(x; sims=10, months=12)
+
+@time equities.loop2(x; sims=10_000, months=1200)
+#  3.259979 seconds (12.00 M allocations: 183.107 MiB)
+# 108.290993 seconds (828.00 M allocations: 18.060 GiB, 2.38% gc time) unpacking tuple approach
+# 16.329537 seconds (156.00 M allocations: 8.047 GiB, 4.81% gc time) passing subarray to slv function
+# 26.730455 seconds (492.00 M allocations: 13.053 GiB, 4.74% gc time)  @ unpack array elements
+
+
+@time equities.loop2(x; sims=2000, months=600)
+
+
 # scenario(params,covmatrix;months=1200)
 # (;σ_v,σ_0, ρ,A,B,C) = params
 equities.scenario(x.equities, x.covmatrix)
@@ -389,11 +402,44 @@ rand(Z)
 rand(Z, 5)
 
 djb = rand(Z, 10000)
-
 djb[:, [1, 3]]
 
+months = 1200
+sims = 10000
+djb = rand(Z, (sims, months))
+@time rand(Z, (sims, months)) # 4.5 secs
+
+f = function(covmatrix, sims, months)
+    Z = MvNormal(
+        zeros(11), # means for return and volatility
+        covmatrix
+        )
+    zx = rand(Z)
+    for i in 1:sims
+        for j in 1:months
+            rand!(Z,zx)
+        end # j
+    end # i
+end # function
+
+f(x.covmatrix, 10, 10)
+@time f(x.covmatrix, sims, months) # 3.354763 seconds (12.00 M allocations: 183.107 MiB)
 
 
+
+size(djb)
+typeof(djb)
+djb[:, :]
+djb[1, :] # sim 1, all months, the vec for each month
+djb[:, 1] # all sims, month 1, the vec for each sim
+djb[7, 3] # the vec for sim 7, month 3
+djb[7, 3][1] # first element of the 11-element vec
+
+
+djb[1, 1]
+djb[1, 1][1]
+
+a=10
 # greek letters -- tab completion (or carriage return)
 # type \tau and then TAB (the tab key) for τ
 # to get a subscript, type \tauTAB\_1TAB to get τ₁
@@ -476,5 +522,139 @@ Component arrays
 # https://jonniedie.github.io/ComponentArrays.jl/stable/api/
 
 =#
+
+
+cm2 = ComponentArray(mat=[
+    1.000	-0.249	0.318	-0.082	0.625	-0.169	0.309	-0.183	0.023	0.075	0.080;
+    -0.249	1.000	-0.046	0.630	-0.123	0.829	-0.136	0.665	-0.120	0.192	0.393;
+    0.318	-0.046	1.000	-0.157	0.259	-0.050	0.236	-0.074	-0.066	0.034	0.044;
+    -0.082	0.630	-0.157	1.000	-0.063	0.515	-0.098	0.558	-0.105	0.130	0.234;
+    0.625	-0.123	0.259	-0.063	1.000	-0.276	0.377	-0.180	0.034	0.028	0.054;
+    -0.169	0.829	-0.050	0.515	-0.276	1.000	-0.142	0.649	-0.106	0.067	0.267;
+    0.309	-0.136	0.236	-0.098	0.377	-0.142	1.000	-0.284	0.026	0.006	0.045;
+    -0.183	0.665	-0.074	0.558	-0.180	0.649	-0.284	1.000	0.034	-0.091	-0.002;
+    0.023	-0.120	-0.066	-0.105	0.034	-0.106	0.026	0.034	1.000	0.047	-0.028;
+    0.075	0.192	0.034	0.130	0.028	0.067	0.006	-0.091	0.047	1.000	0.697;
+    0.080	0.393	0.044	0.234	0.054	0.267	0.045	-0.002	-0.028	0.697	1.000;
+])
+
+zx
+ComponentArray(zx)
+# ax = Axis((a = 1, b = ViewAxis(2:7, PartitionedAxis(2, (a = 1, b = 2))), c = ViewAxis(8:10, (a = 1, b = 2:3))));
+ax = Axis((logvol=Viewaxis([1, 3, 5, 7], (a=1, b=2, c=3, d=4))))
+
+ax = Axis((a = 1, b = ViewAxis(2:7, PartitionedAxis(2, (a = 1, b = 2))), c = ViewAxis(8:10, (a = 1, b = 2:3))))
+
+ax = Axis((a = 1))
+ax = Axis((b = ViewAxis(2:7, PartitionedAxis(2, (a = 1, b = 2)))))
+ax = Axis((c = ViewAxis(8:10, (a = 1, b = 2:3))))
+ax = Axis((c = ViewAxis((8, 9, 10), (a = 1, b = 2:3))))
+
+ax = Axis((c = ViewAxis((8, 9, 11), (a = 1, b = 2:3))))
+
+ComponentArray((zx, axes=ax))
+
+ca = ComponentArray(zx, ax)
+ca.c
+
+ax = Axis((a = 1, b = ViewAxis(2:7, PartitionedAxis(2, (a = 1, b = 2))), c = ViewAxis(8:10, (a = 1, b = 2:3))));
+ax = Axis((a = 1, b = ViewAxis(2:7, PartitionedAxis(2, (a = 1, b = 2))), c = ViewAxis((8, 10), (a = 1, b = 2))))
+A = [100, 4, 1.3, 1, 1, 4.4, 0.4, 2, 1, 45];
+ca = ComponentArray(A, ax)
+ca.a
+ca.b
+ca.b.a
+ca.c
+
+ax=Axis((a=ViewAxis9))
+
+ax= Axis((a=1, b=2, c=3, d=4,e=5,f=6,g=7,h=8,i=9,j=10,k=11))
+ax= Axis((a=1, b=2, c=3, d=4,e=5))
+ab=ComponentArray(A,ax)
+ab.e
+
+x.equities.names
+tuple(Symbol(string(x) * "_vol") for x in x.equities.names)
+
+
+t = (:a, :b, :c)
+suffix = "_suffix"
+Tuple([Symbol(string(xx) * suffix) for xx in t])
+
+typeof(a)
+new_t = tuple(Symbol(string(x) * suffix) for x in t)
+
+x.fixed.names
+# usstocks, :intlstocks, :intrisk, :aggr
+ax=Axis(usstocks_vol=1, usstocks=2, 
+    intlstocks_vol=3, intlstocks=4, 
+    intrisk_vol=5, intrisk=6, 
+    aggr_vol=7, aggr=8,
+    money=9, intgov=10, longcorp=11)
+zx
+cazx=ComponentArray(zx, ax)
+cazx.usstocks
+cazx.usstocks_vol
+
+s1 = :intlstocks
+s2=Symbol(string(s1) * "_vol")
+cazx[s2]
+
+
+
+cmat = [1.0 .2 .3;
+        .2 1.0  .4;
+        .3 .4 1.0]
+
+zb = MvNormal(
+    zeros(3), # means for return and volatility
+    cmat # covariance matrix
+    # full covariance matrix in AAA Excel workook on Parameters tab
+)
+
+
+
+
+function f2(yy)
+    ComponentArray(rand(yy), Axis((a=1, b=2, c=3)))
+end
+
+a = f2(zb)
+
+a.b
+a[:b]
+
+@btime a.b
+@btime a[:b]
+
+@btime f2(zb)
+@btime rand(zb)
+
+# how to write an in-place function
+Zₜ = rand!(Z, Zₜ)
+
+function f3(ca, zb)
+    ca = ComponentArray(rand!(zb, ca), Axis((a=1, b=2, c=3)))
+    nothing
+end
+
+# preallocate then update
+ca = ComponentArray(rand(zb), Axis((a=1, b=2, c=3))) # preallocate
+ca =rand!(zb, ca)
+ca.a
+
+
+
+# US LogVol
+# US LogRet
+# Int'l LogVol
+# Int'l LogRet
+# Small LogVol
+# Small LogRet
+# Aggr LogVol
+# Aggr LogRet
+# Money Ret
+# IT Govt Ret
+# LTCorp Ret
 
 

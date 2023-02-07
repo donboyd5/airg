@@ -116,8 +116,12 @@ end
 function default_covmatrix()
     # The Multivariate normal and covariance matrix
     # 11 columns because it's got the bond returns in it
-    # the 11 elements of the matrix, in order, are
-    # US LogVol, US LogRet, Int'l LogVol, Int'l LogRet, Small LogVol, Small LogRet, Aggr LogVol, Aggr LogRet, Money Ret, IT Govt Ret, LTCorp Ret
+    # the 11 elements of the matrix, in order, are first the equity funds, then the fixed funds
+        # US LogVol, US LogRet,
+        # Int'l LogVol, Int'l LogRet,
+        # Small LogVol , Small LogRet,  (small = intermediate risk)
+        # Aggr LogVol, Aggr LogRet,
+        # Money Ret, IT Govt Ret, LTCorp Ret  fixed funds
     # so logvols are in indexes 1, 3, 5, 7 -- US, Int'l, Small, Aggr
     # and log rets are in 2, 4, 6, 8, 9, 10, 11 -- US, Int'l, Small, Aggr, Money, IT Govt, LT Corp
     covmatrix = [
@@ -133,7 +137,15 @@ function default_covmatrix()
         0.075	0.192	0.034	0.130	0.028	0.067	0.006	-0.091	0.047	1.000	0.697;
         0.080	0.393	0.044	0.234	0.054	0.267	0.045	-0.002	-0.028	0.697	1.000;
     ]
-    return covmatrix
+    # define the component array axis that will correspond to random multivariate normal variables
+    # generated using this covmatrix
+    covmat_axis=Axis(
+        usstocks_vol=1, usstocks=2, 
+        intlstocks_vol=3, intlstocks=4, 
+        intrisk_vol=5, intrisk=6, 
+        aggr_vol=7, aggr=8,
+        money=9, intgov=10, longcorp=11)
+    return covmatrix, covmat_axis
 end
 
 
@@ -147,7 +159,8 @@ function default_params(type="all")
     elseif type=="covmatrix"
         return default_covmatrix()
     elseif type=="all"
-        return (rates=default_rates(), equities=default_equities(), fixed=default_fixed(), covmatrix=default_covmatrix())
+        covmatrix, covmat_axis = default_covmatrix()
+        return (rates=default_rates(), equities=default_equities(), fixed=default_fixed(), covmatrix=covmatrix, covmat_axis=covmat_axis)
     end # elseif
 end # function
 

@@ -5,6 +5,7 @@ using ComponentArrays
 using Distributions # for MvNormal
 using Printf
 using Random
+using UnPack
 
 
 function v(v_prior,params,Zₜ) 
@@ -66,52 +67,37 @@ function scenario(params,Z;months=1200)
 end # function
 
 
-function loop(params; months=1200)
-
-    # extract equities
-    # println(params.names)
-   # a = 0.0 # pre-allocate
-   
-   # consider speed for
-   #   writing after each sim
-   #   writing after all sims for a given fund -- about 96mb -- seems like it should be faster
-    
-    for name in params.names
-        # println(name)
-        # println(params.funds[name])
-        (;τ, σ_v, σ_0, ρ, A, B, C) = params.funds[name]
-        for sim in 1:10000
-            for month in 1:months
-                a = exp(ρ)
-            end
-        end
         # @printf "tau = %0.3f\n" params.funds[name].τ
         # @printf "rho = %0.3f\n" params.funds[name].ρ
         # @printf "tau = %0.3f\n" params.funds[name].τ
         # @printf "rho = %0.3f\n" params.funds[name].ρ
 
-    end 
 
 
-end # function loop
+function v(v_prior, params, Zₜ) 
+	(;σ_v, σ_m,σ_p,σ⃰,ϕ,τ) = params
+	
+	v_m = log.(σ_m)
+	v_p = log.(σ_p)
+	v⃰ = log.(σ⃰)
+
+	# vol are the odd values in the random array
+	ṽ =  @. min(v_p, (1 - ϕ) * v_prior + ϕ * log(τ) ) + σ_v * Zₜ[[1,3,5,7]]
+	
+	v = @. max(v_m, min(v⃰,ṽ))
+
+	return v
+end
 
 
-function loop2(params; months=1200)
 
-    # extract equities
-    println(params.names)
-
-    for name in params.names
-        # println(name)
-        # println(@view params.funds[name])
-        @view params.funds[name]
-        # println(params.funds[name])
-        # @printf "tau = %0.3f\n" vals[fund].τ
-        # @printf "rho = %0.3f\n" vals[fund].ρ
-    end 
-
-
-end # function loop
+function slv(p)
+    # stochastic log volatility
+    v_t = log(p.σ_0)
+    # get the volatility associated ...
+    sym = Symbol(string(symbol1) * suffix)
+    println(sym)
+end
 
 
 end # module
