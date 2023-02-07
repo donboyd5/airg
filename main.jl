@@ -67,6 +67,10 @@ fs
 nrfg =#
 
 ## imports ----
+using Base.Threads
+using Distributed
+using ThreadsX
+
 using BenchmarkTools
 using ComponentArrays
 using Printf
@@ -656,5 +660,11 @@ ca.a
 # Money Ret
 # IT Govt Ret
 # LTCorp Ret
+
+a = [:i1, :i2, :i3]
+b = [:i1s, :i2s, :i3s]
+a[2]
+b[2]
+ca 
 
 
