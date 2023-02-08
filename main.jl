@@ -64,12 +64,15 @@ code by Alec Loudenback at:
 shift-alt-a toggles block comments (with symbols: pound equals at start, equals pound at end)
 snv
 fs
-nrfg =#
+nrfg
+ns is 1 billionth of a second
+
+=#
 
 ## imports ----
-using Base.Threads
-using Distributed
-using ThreadsX
+# using Base.Threads
+# using Distributed
+# using ThreadsX
 
 using BenchmarkTools
 using ComponentArrays
@@ -84,13 +87,51 @@ using Random
 include("module_default_params.jl")
 import .default_parameters as dp
 
+include("module_model.jl")
+using .model
+
 include("module_interest_rates.jl")
 import .intrates
 
-include("module_equities.jl")
+# include("module_equities.jl")
 include("module_equities2.jl")
 import .equities
 
+
+ComponentArray(zeros(11), p.covmat_axis) 
+ComponentArray(zeros(11, 2)[:,1], p.covmat_axis) 
+
+function f1()
+    for sims in 1:10000        
+        a = randn(11, 1200)
+        for month in 1:1200
+            ca = ComponentArray(a[:, month], p.covmat_axis);
+        end
+    end
+end
+
+function f2()
+    for sims in 1:10000                
+        for month in 1:1200
+            ca = ComponentArray(randn(11), p.covmat_axis);
+        end
+    end
+end
+
+@btime f1() #  2.155 s (36020000 allocations: 3.84 GiB);  2.310 s (36020000 allocations: 3.84 GiB) with randn
+@btime f2() # 1.903 s (36000000 allocations: 2.86 GiB); 2.686 s (36000000 allocations: 2.86 GiB) with randn
+
+
+a = zeros(11, 200)
+@btime a[:,7] # 149.939 ns (2 allocations: 160 bytes)
+@btime ComponentArray(a[:,7], p.covmat_axis) # 292.278 ns (4 allocations: 272 bytes) ; 
+# (292.278 - 149.939) / 1e9 * 10000 * 1200 = 1.7 seconds potentially added to the code by using component array, maybe worth it
+
+
+## loop ----
+p = dp.default_params()
+include("module_model.jl")
+model.loop(p, sims=2, months=3)
 
 ## get default parameters ----
 # CAUTION: use dot notation to change values, NOT indexing, which works on slices, not views, of the component array

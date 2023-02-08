@@ -35,6 +35,8 @@ function loop(params; sims=10, months=12)
     Zₜ = ComponentArray(rand(Z), params.covmat_axis) # preallocate
  
      for sim in 1:sims
+        # do NOT loop through months here - rather, let each asset type loop through months, because an asset type may have
+        # correlations across months so it needs to control that
          for month in 1:months
             # get the rand
             Zₜ = rand!(Z, Zₜ) # refill Zₜ with 11 new random normal values per the covariance matrix
@@ -44,7 +46,9 @@ function loop(params; sims=10, months=12)
 
             
              for name in params.equities.names
-                 # println(name)
+                 print(name,", ")
+                 print("usstocks_vol: ")
+                 println("abc ", Zₜ.usstocks_vol)
                  # println(params.funds[name])
                  # (;τ, σ_v, σ_0, ρ, A, B, C) = params.equities.funds[name]            
                  # @unpack τ, σ_v, σ_0, ρ, A, B, C = params.equities.funds[name]            
@@ -52,6 +56,7 @@ function loop(params; sims=10, months=12)
                  # call each 
                  # at what point should we write results??
              end # name
+             println()
          end # months
      end # sims    
  
