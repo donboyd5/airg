@@ -70,9 +70,13 @@ ns is 1 billionth of a second
 =#
 
 ## imports ----
+# using Pkg
+# Pkg.instantiate()
 # using Base.Threads
 # using Distributed
 # using ThreadsX
+
+using Revise # move to setup??
 
 using BenchmarkTools
 using ComponentArrays
@@ -98,25 +102,33 @@ include("module_equities2.jl")
 import .equities
 
 
+dp
+p = dp.default_params()
+
 ComponentArray(zeros(11), p.covmat_axis) 
 ComponentArray(zeros(11, 2)[:,1], p.covmat_axis) 
 
-function f1()
-    for sims in 1:10000        
-        a = randn(11, 1200)
-        for month in 1:1200
-            ca = ComponentArray(a[:, month], p.covmat_axis);
-        end
-    end
+function f3()
+    println("hello")
 end
 
-function f2()
-    for sims in 1:10000                
-        for month in 1:1200
-            ca = ComponentArray(randn(11), p.covmat_axis);
-        end
-    end
-end
+
+# function f1()
+#     for sims in 1:10000        
+#         a = randn(11, 1200)
+#         for month in 1:1200
+#             ca = ComponentArray(a[:, month], p.covmat_axis);
+#         end
+#     end
+# end
+
+# function f2()
+#     for sims in 1:10000                
+#         for month in 1:1200
+#             ca = ComponentArray(randn(11), p.covmat_axis);
+#         end
+#     end
+# end
 
 @btime f1() #  2.155 s (36020000 allocations: 3.84 GiB);  2.310 s (36020000 allocations: 3.84 GiB) with randn
 @btime f2() # 1.903 s (36000000 allocations: 2.86 GiB); 2.686 s (36000000 allocations: 2.86 GiB) with randn

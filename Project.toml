@@ -2,6 +2,7 @@
 Accessors = "7d9f7c33-5ae7-4f3b-8dc6-eff91059b697"
 ActuaryUtilities = "bdd23359-8b1c-4f88-b89b-d11982a786f4"
 Arrow = "69666777-d1a9-59fb-9406-91d4454c9d45"
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 ComponentArrays = "b0b7db55-cfe3-40fc-9ded-d10e2dbeff66"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DuckDB = "d2f5444f-75bc-4fdf-ac35-56f514c445e1"
