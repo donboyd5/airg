@@ -76,7 +76,7 @@ ns is 1 billionth of a second
 # using Distributed
 # using ThreadsX
 
-using Revise # move to setup??
+# using Revise # move to setup??
 
 using BenchmarkTools
 using ComponentArrays
@@ -108,30 +108,31 @@ p = dp.default_params()
 ComponentArray(zeros(11), p.covmat_axis) 
 ComponentArray(zeros(11, 2)[:,1], p.covmat_axis) 
 
-function f3()
-    println("hello")
+
+function f1()
+    # fill matrix at start of each sim, fast but more memory allocations
+    for sims in 1:10000        
+        a = randn(11, 1200)
+        for month in 1:1200
+            ca = ComponentArray(a[:, month], p.covmat_axis);
+        end
+    end
+end
+# Base.summarysize(randn(11, 1200))
+# Base.summarysize(randn(11))
+
+
+function f2()
+    # gen random numbers at each sim and month, slower but fewer memory allocations
+    for sims in 1:10000                
+        for month in 1:1200
+            ca = ComponentArray(randn(11), p.covmat_axis);
+        end
+    end
 end
 
-
-# function f1()
-#     for sims in 1:10000        
-#         a = randn(11, 1200)
-#         for month in 1:1200
-#             ca = ComponentArray(a[:, month], p.covmat_axis);
-#         end
-#     end
-# end
-
-# function f2()
-#     for sims in 1:10000                
-#         for month in 1:1200
-#             ca = ComponentArray(randn(11), p.covmat_axis);
-#         end
-#     end
-# end
-
-@btime f1() #  2.155 s (36020000 allocations: 3.84 GiB);  2.310 s (36020000 allocations: 3.84 GiB) with randn
-@btime f2() # 1.903 s (36000000 allocations: 2.86 GiB); 2.686 s (36000000 allocations: 2.86 GiB) with randn
+@btime f1() #  2.155 s (36020000 allocations: 3.84 GiB);  2.310 s (36020000 allocations: 3.84 GiB) with randn; 2.171 s (36020000 allocations: 3.84 GiB)
+@btime f2() # 1.903 s (36000000 allocations: 2.86 GiB); 2.686 s (36000000 allocations: 2.86 GiB) with randn; 2.564 s (36000000 allocations: 2.86 GiB)
 
 
 a = zeros(11, 200)
